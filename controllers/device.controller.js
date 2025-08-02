@@ -128,11 +128,9 @@ const createDevice = async (req, res) => {
     return res.status(400).json({ message: "Invalid cost value" });
   }
   if (saleOff < 0 || saleOff > 1) {
-    return res
-      .status(400)
-      .json({
-        message: "Invalid saleOff value(saleOff must be between 0 and 1)",
-      });
+    return res.status(400).json({
+      message: "Invalid saleOff value(saleOff must be between 0 and 1)",
+    });
   }
   if (!model) {
     return res.status(400).json({ message: "Model ID is required" });
@@ -141,6 +139,7 @@ const createDevice = async (req, res) => {
     return res.status(400).json({ message: "Invalid model ID format" });
   }
   try {
+    const existingDevice = await Device.findOne({ deviceName: deviceName });
     if (existingDevice) {
       return res.status(400).json({ message: "Device name already exists" });
     }

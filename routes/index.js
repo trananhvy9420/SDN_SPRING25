@@ -19,6 +19,10 @@ router.get("/device/:id", function (req, res, next) {
   const deviceId = req.params.id;
   res.render("devicedetail", { title: "Device Detail", deviceId: deviceId });
 });
+router.get("/updatedevice/:id", function (req, res, next) {
+  const deviceId = req.params.id;
+  res.render("updatedevice", { title: "Update Device", deviceId: deviceId });
+});
 router.get("/createdevice", function (req, res, next) {
   res.render("createdevice", { title: "Create Device" });
 });

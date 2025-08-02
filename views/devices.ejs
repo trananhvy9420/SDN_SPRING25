@@ -244,14 +244,14 @@
           }
           if (target.classList.contains("btn-update")) {
             if (deviceId) {
-              window.location.href = `/view/updatedevice/${deviceId}`;
+              window.location.href = `/updatedevice/${deviceId}`;
             }
           }
 
           if (target.classList.contains("btn-delete")) {
             if (
-              sectionId &&
-              confirm(`Bạn có chắc chắn muốn xóa section này không?`)
+              deviceId &&
+              confirm(`Do you want to delete device with ID: ${deviceId}}?`)
             ) {
               axios
                 .delete(`${devicesApiUrl}/${deviceId}`, config)
