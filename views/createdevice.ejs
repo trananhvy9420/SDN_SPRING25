@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create New Section</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Axios for making HTTP requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Custom styles for the toggle switch */
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .toggle-checkbox:checked {
+        right: 0;
+        border-color: #4f46e5; /* indigo-600 */
+      }
+      .toggle-checkbox:checked + .toggle-label {
+        background-color: #4f46e5; /* indigo-600 */
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div
+      class="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 md:p-10"
+    >
+      <div class="flex justify-content flex-end">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+            Create a New Device
+          </h1>
+        </div>
+        <div>
+          <button class="btn btn-create ml-100" style="margin-left: 200px">
+            Quay lại
+          </button>
+        </div>
+      </div>
+
+      <form id="createSectionForm" novalidate>
+        <div class="space-y-6">
+          <div>
+            <label
+              for="deviceName"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Device Name</label
+            >
+            <input
+              type="text"
+              id="deviceName"
+              name="deviceName"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+              placeholder="e.g., Introduction to JavaScript"
+            />
+          </div>
+
+          <div>
+            <label
+              for="deviceDescription"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Device Description</label
+            >
+            <textarea
+              id="deviceDescription"
+              name="deviceDescription"
+              rows="4"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+              placeholder="Describe the device's features..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label
+              for="saleOff"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Device Sale Off</label
+            >
+            <input
+              type="number"
+              min="0"
+              max="999999"
+              id="saleOff"
+              name="saleOff"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+              placeholder="e.g., 200 USD"
+            />
+          </div>
+          <div>
+            <label
+              for="cost"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Device Cost</label
+            >
+            <input
+              type="number"
+              min="0"
+              max="1"
+              id="cost"
+              name="cost"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+              placeholder="e.g., 200 USD"
+            />
+          </div>
+
+          <div>
+            <label
+              for="model"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Model</label
+            >
+            <select
+              id="model"
+              name="model"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 bg-white"
+            >
+              <option value="" disabled selected>Loading models...</option>
+            </select>
+          </div>
+
+          <!-- Is Main Task Toggle -->
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-700"
+              >Is this a Famous Device?</span
+            >
+            <div
+              class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
+            >
+              <input
+                type="checkbox"
+                name="isFamous"
+                id="isFamous"
+                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              />
+              <label
+                for="isFamous"
+                class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+              ></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages (for errors or success) -->
+        <div id="message-container" class="mt-6 text-sm"></div>
+
+        <!-- Submit Button -->
+        <div class="mt-8">
+          <button
+            type="submit"
+            id="submit-button"
+            class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 shadow-lg disabled:bg-indigo-300 disabled:cursor-not-allowed"
+          >
+            Create Device
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("createSectionForm");
+        const courseSelect = document.getElementById("course");
+        const submitButton = document.getElementById("submit-button");
+        const messageContainer = document.getElementById("message-container");
+        const modelSelect = document.getElementById("model");
+        const API_BASE_URL = "http://localhost:3000/api";
+        const token = localStorage.getItem("access_token");
+        const showMessage = (text, type = "error") => {
+          messageContainer.innerHTML = `
+                    <div class="p-4 rounded-md ${
+                      type === "error"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-green-100 text-green-700"
+                    }">
+                        ${text}
+                    </div>
+                `;
+        };
+
+        const clearMessage = () => {
+          messageContainer.innerHTML = "";
+        };
+        const createButton = document.querySelector(".btn-create");
+        createButton.addEventListener("click", () => {
+          window.location.href = "/view/sections";
+        });
+        const fetchModels = async () => {
+          if (!token) {
+            showMessage(
+              "Authentication token not found in localStorage. Please log in."
+            );
+            submitButton.disabled = true;
+            modelSelect.innerHTML =
+              '<option value="" disabled selected>Could not load models</option>';
+            return;
+          }
+
+          try {
+            const response = await axios.get(`${API_BASE_URL}/models`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            const models = response.data.data || response.data;
+            console.log("Models fetched:", models);
+            if (Array.isArray(models) && models.length > 0) {
+              modelSelect.innerHTML = "";
+              models.forEach((model) => {
+                const option = document.createElement("option");
+                option.value = model._id;
+                option.textContent =
+                  model.modelName || `Model ID: ${model._id}`;
+                modelSelect.appendChild(option);
+              });
+            } else {
+              modelSelect.innerHTML =
+                '<option value="" disabled selected>No models found</option>';
+              showMessage("No models available to select.", "error");
+            }
+          } catch (error) {
+            console.error("Error fetching models:", error);
+            showMessage(
+              "Failed to fetch models. Check API and network.",
+              "error"
+            );
+            modelSelect.innerHTML =
+              '<option value="" disabled selected>Error loading models</option>';
+            submitButton.disabled = true;
+          }
+        };
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          clearMessage();
+
+          if (!token) {
+            showMessage(
+              "Authentication token not found. Cannot create section."
+            );
+            return;
+          }
+
+          const formData = new FormData(form);
+          const data = {
+            deviceName: formData.get("deviceName"),
+            deviceDescription: formData.get("deviceDescription"),
+            cost: Number(formData.get("cost")),
+            saleOff: Number(formData.get("saleOff")),
+            isFamous: document.getElementById("isFamous").checked,
+            model: formData.get("model"),
+          };
+
+          if (
+            !data.deviceName ||
+            !data.deviceDescription ||
+            !data.cost ||
+            !data.saleOff ||
+            !data.model
+          ) {
+            showMessage("Please fill out all required fields.");
+            return;
+          }
+          console.log(data);
+          submitButton.disabled = true;
+          submitButton.textContent = "Creating...";
+
+          try {
+            const response = await axios.post(`${API_BASE_URL}/devices`, data, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            });
+
+            showMessage("Devices created successfully!", "success");
+            form.reset();
+          } catch (error) {
+            console.error("Error creating devices:", error);
+            const errorMessage =
+              error.response?.data?.message || "An unknown error occurred.";
+            showMessage(`Error: ${errorMessage}`);
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Create Device";
+          }
+        });
+
+        fetchModels();
+      });
+    </script>
+  </body>
+</html>

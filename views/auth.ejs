@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+      <div id="login-section">
+        <h2 class="text-2xl font-semibold text-center mb-4">
+          Đăng nhập tài khoản
+        </h2>
+        <p class="text-gray-600 text-center mb-6">
+          Chào mừng trở lại! Vui lòng nhập thông tin của bạn.
+        </p>
+        <form id="login-form" novalidate>
+          <div class="mb-4">
+            <label
+              for="login-membername"
+              class="block text-gray-700 text-sm font-bold mb-2"
+              >Tên thành viên</label
+            >
+            <input
+              type="text"
+              id="login-membername"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              placeholder="Nhập tên thành viên"
+              required
+            />
+            <p
+              id="login-membername-error"
+              class="text-red-500 text-xs mt-1 h-4"
+            ></p>
+          </div>
+          <div class="mb-4">
+            <label
+              for="login-password"
+              class="block text-gray-700 text-sm font-bold mb-2"
+              >Mật khẩu</label
+            >
+            <input
+              type="password"
+              id="login-password"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              placeholder="********"
+              required
+            />
+            <p
+              id="login-password-error"
+              class="text-red-500 text-xs mt-1 h-4"
+            ></p>
+          </div>
+          <div
+            id="login-form-error"
+            class="text-red-500 text-sm mb-4 text-center h-5"
+          ></div>
+          <button
+            type="submit"
+            class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300"
+          >
+            Đăng Nhập
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlParamsOnLoad = new URLSearchParams(window.location.search);
+        const accessTokenFromUrl = urlParamsOnLoad.get("access_token");
+        if (accessTokenFromUrl) {
+          localStorage.setItem("access_token", accessTokenFromUrl);
+          const cleanUrl =
+            window.location.protocol +
+            "//" +
+            window.location.host +
+            window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+          window.location.replace("/view/sections");
+        }
+
+        const loginForm = document.getElementById("login-form");
+        const clearErrors = () => {
+          const fields = ["membername", "password"];
+          fields.forEach((field) => {
+            const inputEl = document.getElementById(`login-${field}`);
+            const errorEl = document.getElementById(`login-${field}-error`);
+            if (inputEl)
+              inputEl.classList.remove("border-red-500", "focus:ring-red-500");
+            if (errorEl) errorEl.textContent = "";
+          });
+          const formErrorEl = document.getElementById(`login-form-error`);
+          if (formErrorEl) formErrorEl.textContent = "";
+        };
+
+        loginForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          clearErrors();
+          const us = document.getElementById("login-membername").value;
+          const pa = document.getElementById("login-password").value;
+          const formErrorDiv = document.getElementById("login-form-error");
+
+          try {
+            const response = await axios.post("/api/auth/sigin", {
+              us,
+              pa,
+            });
+            localStorage.setItem("access_token", response.data.access_token);
+            window.location.href = "/devices";
+          } catch (error) {
+            console.error("Lỗi đăng nhập:", error.response);
+            if (
+              error.response &&
+              error.response.data &&
+              error.response.data.message
+            ) {
+              formErrorDiv.textContent = error.response.data.message;
+            } else {
+              formErrorDiv.textContent =
+                "Tên thành viên hoặc mật khẩu không đúng.";
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
