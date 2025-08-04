@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>List Devices</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 2em;
+        background-color: #f7f7f7;
+        color: #333;
+      }
+      h1 {
+        color: #1a1a1a;
+        text-align: center;
+      }
+      .controls-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5em;
+      }
+      .filter-container {
+        display: flex;
+        align-items: center;
+      }
+      .filter-container label {
+        margin-right: 10px;
+        font-weight: bold;
+      }
+      .card-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding-top: 1em;
+      }
+      .device-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+      }
+      .device-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      }
+      .card-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+      }
+      .card-header h3 {
+        margin: 0;
+        color: #007bff;
+      }
+      .card-body {
+        flex-grow: 1;
+      }
+      .card-body p {
+        margin: 5px 0;
+      }
+      .card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 15px;
+      }
+      .error {
+        color: #d8000c;
+        text-align: center;
+        font-weight: bold;
+      }
+      .btn {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        font-weight: bold;
+        transition: background-color 0.2s, opacity 0.2s;
+      }
+      .btn:hover {
+        opacity: 0.8;
+      }
+      #courseFilter {
+        padding: 8px 12px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        background-color: white;
+      }
+      .btn-create {
+        background-color: #28a745;
+      }
+      .btn-detail {
+        background-color: #17a2b8;
+      }
+      .btn-delete {
+        background-color: #dc3545;
+      }
+      .btn-update {
+        background-color: #007bff;
+      }
+      .no-data-message {
+        text-align: center;
+        font-size: 1.2em;
+        color: #666;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>List Devices</h1>
+    <div class="controls-container">
+      <div class="filter-container">
+        <label for="courseFilter">Filter by device:</label>
+        <select id="courseFilter">
+          <option value="all">All device types</option>
+        </select>
+      </div>
+      <button class="btn btn-create">Create new device</button>
+    </div>
+
+    <div id="cardContainer" class="card-container"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const cardContainer = document.getElementById("cardContainer");
+        const createButton = document.querySelector(".btn-create");
+        const modelsFilter = document.getElementById("courseFilter");
+        const devicesApiUrl = "http://localhost:3000/api/devices";
+        const modelsApiUrl = "http://localhost:3000/api/models";
+        const accessToken = localStorage.getItem("access_token");
+
+        createButton.addEventListener("click", () => {
+          window.location.href = "/createdevice";
+        });
+
+        if (!accessToken) {
+          cardContainer.innerHTML = `<div class="error">Lỗi: Không tìm thấy token. Vui lòng đăng nhập lại.</div>`;
+          return;
+        }
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        };
+
+        const displayError = (message) => {
+          cardContainer.innerHTML = `<div class="error">${message}</div>`;
+        };
+
+        const renderDevices = (devices, modelMap) => {
+          cardContainer.innerHTML = "";
+          if (!devices || devices.length === 0) {
+            cardContainer.innerHTML = `<div class="no-data-message">Không có dữ liệu để hiển thị.</div>`;
+            return;
+          }
+
+          devices.forEach((device) => {
+            const modelId = device.model?._id || device.model;
+            const modelName = modelMap.get(modelId) || "N/A";
+
+            const deviceCard = document.createElement("div");
+            deviceCard.classList.add("device-card");
+            deviceCard.dataset.modelId = modelId || "";
+            deviceCard.innerHTML = `
+              <div class="card-header">
+                <h3>${device.deviceName}</h3>
+              </div>
+              <div class="card-body">
+                <p><strong>Mô tả:</strong> ${device.deviceDescription}</p>
+                <p><strong>Giá:</strong> ${device.cost}</p>
+                <p><strong>Giảm giá:</strong> ${device.saleOff}</p>
+                <p><strong>Nổi bật:</strong> ${
+                  device.famouse ? "Có" : "Không"
+                }</p>
+                <p><strong>Model:</strong> ${modelName}</p>
+              </div>
+              <div class="card-actions">
+                <button class="btn btn-detail" data-id="${
+                  device._id
+                }">Detail</button>
+                <button class="btn btn-update" data-id="${
+                  device._id
+                }">Update</button>
+                <button class="btn btn-delete" data-id="${
+                  device._id
+                }">Delete</button>
+              </div>
+            `;
+            cardContainer.appendChild(deviceCard);
+          });
+        };
+
+        try {
+          const [modelsResponse, devicesResponse] = await Promise.all([
+            axios.get(modelsApiUrl, config),
+            axios.get(devicesApiUrl, config),
+          ]);
+
+          const models = modelsResponse.data.data || modelsResponse.data;
+          const devices = devicesResponse.data.data || devicesResponse.data;
+
+          const modelMap = new Map();
+          if (Array.isArray(models)) {
+            models.forEach((model) => {
+              modelMap.set(model._id, model.modelName);
+            });
+          }
+
+          modelMap.forEach((name, id) => {
+            const option = document.createElement("option");
+            option.value = id;
+            option.textContent = name;
+            modelsFilter.appendChild(option);
+          });
+
+          renderDevices(devices, modelMap);
+
+          modelsFilter.addEventListener("change", (e) => {
+            const selectedModelId = e.target.value;
+            const cards = cardContainer.querySelectorAll(".device-card");
+            cards.forEach((card) => {
+              const cardModelId = card.dataset.modelId;
+              if (
+                selectedModelId === "all" ||
+                cardModelId === selectedModelId
+              ) {
+                card.style.display = "flex";
+              } else {
+                card.style.display = "none";
+              }
+            });
+          });
+
+          cardContainer.addEventListener("click", (event) => {
+            const target = event.target;
+            const deviceId = target.dataset.id;
+
+            if (target.classList.contains("btn-detail")) {
+              if (deviceId) {
+                window.location.href = `/device/${deviceId}`;
+              }
+            } else if (target.classList.contains("btn-update")) {
+              if (deviceId) {
+                window.location.href = `/updatedevice/${deviceId}`;
+              }
+            } else if (target.classList.contains("btn-delete")) {
+              if (
+                deviceId &&
+                confirm(
+                  `Bạn có chắc muốn xóa thiết bị có ID: ${deviceId} không?`
+                )
+              ) {
+                axios
+                  .delete(`${devicesApiUrl}/${deviceId}`, config)
+                  .then(() => {
+                    alert("Xóa thành công!");
+                    target.closest(".device-card").remove();
+                  })
+                  .catch((error) => {
+                    console.error("Lỗi khi xóa:", error);
+                    alert("Đã xảy ra lỗi khi xóa thiết bị.");
+                  });
+              }
+            }
+          });
+        } catch (error) {
+          console.error("Lỗi khi tải dữ liệu:", error);
+          let errorMessage =
+            "Không thể kết nối tới API. Vui lòng kiểm tra lại.";
+          if (
+            error.response &&
+            (error.response.status === 401 || error.response.status === 403)
+          ) {
+            errorMessage = "Lỗi xác thực. Token không hợp lệ hoặc đã hết hạn.";
+          }
+          displayError(errorMessage);
+        }
+      });
+    </script>
+  </body>
+</html>

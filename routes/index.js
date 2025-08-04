@@ -26,4 +26,11 @@ router.get("/updatedevice/:id", function (req, res, next) {
 router.get("/createdevice", function (req, res, next) {
   res.render("createdevice", { title: "Create Device" });
 });
+router.get("/devicecard", function (req, res, next) {
+  res.render("devicescard", { title: "Create Device" });
+});
+router.get("/devicescardnofilter", function (req, res, next) {
+  const deviceId = req.params.id;
+  res.render("devicesnotfilter", { title: "Device Card", deviceId: deviceId });
+});
 module.exports = router;
