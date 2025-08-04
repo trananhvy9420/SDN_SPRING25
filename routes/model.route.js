@@ -10,5 +10,5 @@ modelRouter
   .route("/:id")
   .get(protectedRoute, modelController.getAllModelByID)
   .delete(protectedRoute, modelController.deleteModelByID)
-  .put(protectedRoute, modelController.updateModelByID);
+  .patch(protectedRoute, modelController.updateModelByID);
 module.exports = modelRouter;

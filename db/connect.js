@@ -10,7 +10,8 @@ const connectDB = async (MONGO_URI) => {
     console.log("MongoDB connection string: " + MONGO_URI);
     console.log("PORT" + process.env.PORT);
   } catch (error) {
-    console.error("MongoDB connection failed:", error);
+    console.error("MongoDB connection failed:", error);co
+    
     process.exit(1);
   }
 };

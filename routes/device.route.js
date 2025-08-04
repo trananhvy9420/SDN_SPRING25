@@ -9,6 +9,6 @@ deviceRouter
 deviceRouter
   .route("/:id")
   .get(protectedRoute, deviceController.getDeviceByID)
-  .put(protectedRoute, deviceController.updateDeviceByID)
+  .patch(protectedRoute, deviceController.updateDeviceByID)
   .delete(protectedRoute, deviceController.deleteDeviceByID);
 module.exports = deviceRouter;

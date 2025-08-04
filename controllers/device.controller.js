@@ -71,13 +71,63 @@ const updateDeviceByID = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ message: "Invalid device ID format" });
   }
-  try {
-    const updatedDevice = await Device.findByIdAndUpdate(id, req.body, {
-      new: true,
+  const { deviceName, deviceDescription, cost, saleOff, isFamous, model } =
+    req.body;
+  const updatedData = {};
+  if (deviceName) {
+    if (typeof deviceName !== "string" || deviceName.trim() === "") {
+      return res
+        .status(400)
+        .json({ message: "Device name must be a non-empty string" });
+    }
+    const existingDevice = await Device.findOne({
+      deviceName: deviceName,
+      _id: { $ne: id },
     });
-    if (!updatedDevice) {
+    if (existingDevice) {
+      return res.status(400).json({ message: "Device name already exists" });
+    }
+    updatedData.deviceName = deviceName;
+  }
+  if (deviceDescription) {
+    if (
+      typeof deviceDescription !== "string" ||
+      deviceDescription.trim() === ""
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Device description must be a non-empty string" });
+    }
+    updatedData.deviceDescription = deviceDescription;
+  }
+  if (cost) {
+    if (typeof cost !== "number" || cost < 0 || cost > 999999) {
+      return res.status(400).json({ message: "Invalid cost value" });
+    }
+    updatedData.cost = cost;
+  }
+  if (saleOff) {
+    if (typeof saleOff !== "number" || saleOff < 0 || saleOff > 1) {
+      return res.status(400).json({ message: "Invalid saleOff value" });
+    }
+    updatedData.saleOff = saleOff;
+  }
+  if (isFamous !== undefined) {
+    if (typeof isFamous !== "boolean") {
+      return res.status(400).json({ message: "Invalid isFamous value" });
+    }
+    updatedData.isFamous = isFamous;
+  }
+  if (model) updatedData.model = model;
+
+  try {
+    const existingDevice = await Device.findById(id);
+    if (!existingDevice) {
       return res.status(404).json({ message: "Device not found" });
     }
+    const updatedDevice = await Device.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
     const response = {
       message: "Device updated successfully",
       device: updatedDevice,
