@@ -66,14 +66,12 @@
         const sectionDetailDiv = document.getElementById("sectionDetail");
 
         const path = window.location.pathname;
-        // Tách chuỗi bằng dấu '/' và lấy phần tử cuối cùng
         const id = path.split("/").pop();
         if (!id) {
           sectionDetailDiv.innerHTML = `<p class="error">Không tìm thấy ID của thiết bị trong URL.</p>`;
           return;
         }
 
-        // 1. Lấy access_token từ localStorage
         const accessToken = localStorage.getItem("access_token");
 
         if (!accessToken) {
@@ -81,7 +79,6 @@
           return;
         }
 
-        // 2. Tạo đối tượng headers để xác thực
         const config = {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -89,8 +86,6 @@
         };
         console.log(id);
         const apiUrl = `http://localhost:3000/api/devices/${id}`;
-
-        // 3. Truyền config vào yêu cầu axios
         axios
           .get(apiUrl, config)
           .then((response) => {

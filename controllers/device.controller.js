@@ -155,9 +155,7 @@ const createDevice = async (req, res) => {
   if (typeof isFamous !== "boolean") {
     return res.status(400).json({ message: "isFamous must be a boolean" });
   }
-  if (!isFamous) {
-    return res.status(400).json({ message: "isFamous must be true" });
-  }
+
   if (typeof deviceName !== "string") {
     return res.status(400).json({ message: "Device name must be a string" });
   }
