@@ -112,14 +112,26 @@ const updateDeviceByID = async (req, res) => {
     }
     updatedData.saleOff = saleOff;
   }
-  if (isFamous !== undefined) {
+  if (isFamous) {
     if (typeof isFamous !== "boolean") {
       return res.status(400).json({ message: "Invalid isFamous value" });
     }
     updatedData.isFamous = isFamous;
   }
-  if (model) updatedData.model = model;
-
+  if (model) {
+    if (!mongoose.Types.ObjectId.isValid(model)) {
+      return res.status(400).json({ message: "Invalid model ID format" });
+    }
+    updatedData.model = model;
+  }
+  if (Object.keys(updatedData).length === 0) {
+    return res.status(400).json({ message: "No valid fields to update" });
+  }
+  if (Object.keys(updatedData).length > 5) {
+    return res.status(400).json({
+      message: "Too many fields to update, please limit to 5 fields",
+    });
+  }
   try {
     const existingDevice = await Device.findById(id);
     if (!existingDevice) {
